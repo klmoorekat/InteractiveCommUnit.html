@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic AetherLog Comm-Unit ID Generator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for futuristic look */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+        
+        :root {
+            --dark-bg: #0d1117;
+            /* Default/Standard Theme Colors */
+            --standard-card-bg: rgba(17, 24, 39, 0.7);
+            --standard-glow-color: #00c8ff;
+            --standard-border-color: #374151;
+            --standard-header-bar-color: #0891b2; 
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 10vh; 
+            padding: 2rem;
+        }
+
+        /* Base ID Card Styling */
+        .id-card {
+            background: var(--standard-card-bg);
+            border: 2px solid var(--standard-border-color);
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.2); 
+            backdrop-filter: blur(8px);
+            transition: all 0.5s ease-in-out;
+            min-width: 320px;
+            max-width: 400px;
+            width: 95%;
+            position: relative;
+        }
+        
+        /* Inner border glow effect (Standard - Cyan) */
+        .id-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.4), rgba(0, 100, 200, 0.1)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: -1;
+            transition: background 0.5s ease-in-out;
+        }
+        
+        /* Photo Border Default */
+        .photo-border {
+            border: 4px solid #06B6D4; 
+            box-shadow: 0 0 15px #06B6D430; 
+            transition: all 0.5s ease-in-out;
+            overflow: hidden; 
+        }
+
+
+        /* --- FIERY GINA THEME OVERRIDES --- */
+        .fiery-theme {
+            background: rgba(30, 0, 0, 0.9);
+            border-color: #D90429;
+            box-shadow: 
+                0 0 10px #FF4500,    
+                0 0 25px #D90429,    
+                0 0 50px rgba(217, 4, 41, 0.4); 
+        }
+        
+        /* Fiery Inner border glow effect */
+        .fiery-theme::before {
+            background: linear-gradient(135deg, rgba(255, 69, 0, 0.7), rgba(160, 30, 0, 0.2)) border-box;
+        }
+
+        /* Fiery Photo Border */
+        .fiery-theme .photo-border {
+            border-color: #FF4500; 
+            box-shadow: 0 0 15px #D90429; 
+        }
+        
+        .fiery-theme #char-title {
+            color: #FF7F50; 
+        }
+        /* --- END FIERY GINA THEME --- */
+
+        /* Deception Active Indicator */
+        .deception-glitch {
+            background-color: #EAB308; /* Yellow-500 */
+            animation: glitch-pulse 0.2s steps(1) infinite alternate;
+            color: #1f2937;
+            font-weight: bold;
+        }
+
+        @keyframes glitch-pulse {
+            0% { transform: translate(1px, 1px); opacity: 0.9; }
+            50% { transform: translate(-1px, -1px); opacity: 1; }
+            100% { transform: translate(1px, 1px); opacity: 0.9; }
+        }
+
+        /* Focus glow for status */
+        .status-glow {
+            animation: pulse-glow 2s infinite alternate;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        /* Keyframes for the pulsing glow effect */
+        @keyframes pulse-glow {
+            from { opacity: 0.8; box-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
+            to { opacity: 1; box-shadow: 0 0 12px currentColor, 0 0 24px currentColor; }
+        }
+
+        /* Custom styling for the selection dropdown */
+        #character-select {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #1f2937;
+            color: #ffffff;
+            border: 1px solid #4b5563;
+            box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="text-3xl sm:text-4xl font-extrabold mb-8 text-cyan-300 tracking-wider font-['Orbitron'] text-center">
+        AetherLog Comm-Unit ID Generator
+    </h1>
+
+    <!-- Character Selector -->
+    <div class="mb-8 w-full max-w-sm">
+        <label for="character-select" class="block text-sm font-medium text-gray-300 mb-2">Select Character Profile:</label>
+        <select id="character-select" onchange="loadCharacterData()" class="block w-full rounded-lg py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
+            <!-- Options will be populated by JavaScript -->
+        </select>
+    </div>
+
+    <!-- ID Card Display -->
+    <div id="id-card" class="id-card rounded-xl p-6 sm:p-8">
+        
+        <!-- Header Section -->
+        <div class="flex justify-between items-start mb-6 border-b border-gray-600 pb-4">
+            <h2 class="text-lg font-bold text-gray-300 uppercase tracking-widest font-['Orbitron']">
+                AetherLog
+            </h2>
+            <div class="text-right">
+                <p class="text-xs text-gray-400">UNIT ID</p>
+                <p id="id-number" class="text-sm font-mono text-cyan-300 font-semibold">CWU-0000</p>
+            </div>
+        </div>
+
+        <!-- Character Photo/Avatar Container -->
+        <div class="flex justify-center mb-6">
+            <div id="photo-container" class="photo-border w-24 h-24 sm:w-28 sm:h-28 bg-gray-700 rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30 overflow-hidden">
+                <div id="avatar-content" class="w-full h-full flex items-center justify-center">
+                    <!-- Default SVG placeholder goes here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Details -->
+        <div class="space-y-3 mb-6">
+            <div class="text-center">
+                <p id="char-name" class="text-3xl font-bold text-white tracking-wide font-['Orbitron']">
+                    [Character Name]
+                </p>
+                <p id="char-title" class="text-md text-cyan-400 mt-1 uppercase">
+                    [Title/Rank]
+                </p>
+            </div>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="flex flex-col items-center mt-6">
+            <span id="char-status" class="status-glow text-sm mb-2" style="color: #3B82F6;">
+                [Status Message]
+            </span>
+            <!-- Deception Active Indicator -->
+            <span id="deception-indicator" class="hidden text-xs py-1 px-3 rounded-full deception-glitch">
+                DECEPTION FIELD ACTIVE
+            </span>
+        </div>
+
+        <!-- Footer Bar/Hologram effect -->
+        <div class="mt-8">
+            <div id="footer-bar-1" class="h-2 w-full bg-cyan-700 opacity-50 rounded-full mb-1 transition-colors duration-500"></div>
+            <div id="footer-bar-2" class="h-1 w-3/4 bg-cyan-400 opacity-80 mx-auto rounded-full transition-colors duration-500"></div>
+        </div>
+
+    </div>
+
+    <!-- Deception Toggle Button (Only visible for Gina) -->
+    <button id="deception-toggle-btn" onclick="toggleCWUDeception()" class="mt-6 hidden py-3 px-6 rounded-lg font-bold text-sm uppercase transition duration-300
+        bg-amber-600 hover:bg-amber-500 text-gray-900 shadow-xl shadow-amber-900/50 hover:shadow-amber-700/60
+        disabled:bg-gray-700 disabled:text-gray-400 disabled:shadow-none font-['Orbitron']">
+        ACTIVATE BACKDOOR OVERRIDE
+    </button>
+
+
+    <script>
+        // Global state for deception status
+        let isDeceptionActive = false;
+        
+        // Default SVG for avatar placeholder
+        const defaultAvatarSVG = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-gray-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+        `;
+
+        // Array to store all character data.
+        const characterProfiles = [
+            {
+                name: "Tellyr Aetherion",
+                title: "Civilian",
+                id: "CWU-4001",
+                status: "Active Lock-Link Required",
+                color: "#2563EB", // Blue
+                titleColor: "#06B6D4", // Cyan
+                themeClass: "default",
+                imageUrl: "https://placehold.co/100x100/3B82F6/FFFFFF?text=T" 
+            },
+            {
+                name: "Lyra Vex",
+                title: "Audit Agent",
+                id: "CWU-9904",
+                status: "Authorised Personnel",
+                color: "#10B981", // Green
+                titleColor: "#10B981", // Green
+                themeClass: "default",
+                imageUrl: "https://placehold.co/100x100/10B981/FFFFFF?text=L" 
+            },
+            {
+                name: "Kaelen Rhyse",
+                title: "Grey-Market Dealer",
+                id: "CWU-8317",
+                status: "Flagged: Non-Compliant",
+                color: "#EF4444", // Red
+                titleColor: "#EF4444", // Red
+                themeClass: "default",
+                imageUrl: "https://placehold.co/100x100/EF4444/FFFFFF?text=K" 
+            },
+            {
+                name: "Gina Castellano",
+                title: "Head of Security",
+                id: "CWU-7734",
+                status: "PROTECTED ASSET LINK (QUINN)",
+                color: "#FF4500", // Original status glow color (Fiery Orange)
+                titleColor: "#FF7F50", // Coral (for title text)
+                themeClass: "fiery", // Original card theme
+                imageUrl: "https://placehold.co/100x100/A50000/FFFFFF?text=G",
+                // Deception field properties for Gina
+                deception: {
+                    targetThemeClass: "default", // Fakes the "default" (Blue/Cyan) look
+                    targetColor: "#2563EB", // Target color for status glow when faking
+                    targetTitleColor: "#06B6D4" // Target color for title text when faking
+                }
+            }
+        ];
+
+        // DOM elements
+        const selectElement = document.getElementById('character-select');
+        const nameElement = document.getElementById('char-name');
+        const titleElement = document.getElementById('char-title');
+        const idElement = document.getElementById('id-number');
+        const statusElement = document.getElementById('char-status');
+        const cardElement = document.getElementById('id-card');
+        const photoContainerElement = document.getElementById('photo-container');
+        const avatarContentElement = document.getElementById('avatar-content');
+        const footerBar1Element = document.getElementById('footer-bar-1');
+        const footerBar2Element = document.getElementById('footer-bar-2');
+        const toggleButton = document.getElementById('deception-toggle-btn');
+        const deceptionIndicator = document.getElementById('deception-indicator');
+
+        /**
+         * Toggles the deception field on/off for Gina and reloads the display.
+         */
+        function toggleCWUDeception() {
+            isDeceptionActive = !isDeceptionActive;
+            const btnText = isDeceptionActive ? "DEACTIVATE FIELD" : "ACTIVATE BACKDOOR OVERRIDE";
+            const btnColor = isDeceptionActive ? "bg-red-600 hover:bg-red-500 shadow-red-900/50" : "bg-amber-600 hover:bg-amber-500 shadow-amber-900/50";
+            
+            toggleButton.textContent = btnText;
+            
+            // Swap Tailwind classes for button color
+            toggleButton.classList.remove("bg-amber-600", "hover:bg-amber-500", "shadow-amber-900/50", "bg-red-600", "hover:bg-red-500", "shadow-red-900/50");
+            toggleButton.classList.add(...btnColor.split(' '));
+            
+            loadCharacterData();
+        }
+
+        /**
+         * Populates the character selection dropdown with names from the data array.
+         */
+        function populateCharacterSelect() {
+            characterProfiles.forEach((profile, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${profile.name} (${profile.title})`;
+                selectElement.appendChild(option);
+            });
+            // Load the first character and reset deception state
+            isDeceptionActive = false;
+            loadCharacterData();
+        }
+
+        /**
+         * Updates the ID card display with data from the selected character, applying deception if active.
+         */
+        function loadCharacterData() {
+            const selectedIndex = selectElement.value;
+            if (selectedIndex === null || selectedIndex === "") return;
+
+            const profile = characterProfiles[parseInt(selectedIndex)];
+            
+            // Determine if the deception field should be applied
+            let effectiveProfile = profile;
+            let currentThemeClass = profile.themeClass;
+            let isCurrentProfileGina = profile.name === "Gina Castellano";
+
+            // If Gina is selected and deception is active, override colors/themes
+            if (isCurrentProfileGina && isDeceptionActive) {
+                currentThemeClass = profile.deception.targetThemeClass;
+                // Deception Indicator is visible
+                deceptionIndicator.classList.remove('hidden');
+                
+            } else {
+                // Deception Indicator is hidden
+                deceptionIndicator.classList.add('hidden');
+            }
+            
+            // --- Toggle Button Visibility ---
+            if (isCurrentProfileGina) {
+                toggleButton.classList.remove('hidden');
+                // Ensure button text/color matches current state
+                const btnText = isDeceptionActive ? "DEACTIVATE FIELD" : "ACTIVATE BACKDOOR OVERRIDE";
+                const btnColor = isDeceptionActive ? "bg-red-600 hover:bg-red-500 shadow-red-900/50" : "bg-amber-600 hover:bg-amber-500 shadow-amber-900/50";
+                toggleButton.textContent = btnText;
+                toggleButton.classList.remove("bg-amber-600", "hover:bg-amber-500", "shadow-amber-900/50", "bg-red-600", "hover:bg-red-500", "shadow-red-900/50");
+                toggleButton.classList.add(...btnColor.split(' '));
+            } else {
+                toggleButton.classList.add('hidden');
+                // Reset deception state when switching to another character
+                isDeceptionActive = false;
+            }
+
+
+            // --- 1. AVATAR/IMAGE HANDLING ---
+            if (profile.imageUrl) {
+                avatarContentElement.innerHTML = `
+                    <img 
+                        src="${profile.imageUrl}" 
+                        alt="${profile.name}'s Avatar" 
+                        class="w-full h-full object-cover"
+                        onerror="this.onerror=null; this.src='https://placehold.co/100x100/94A3B8/FFFFFF?text=ERROR'"
+                    />
+                `;
+            } else {
+                avatarContentElement.innerHTML = defaultAvatarSVG;
+            }
+
+
+            // --- 2. THEME MANAGEMENT (Fiery or Default) ---
+            cardElement.classList.remove('fiery-theme');
+            
+            if (currentThemeClass === 'fiery') {
+                cardElement.classList.add('fiery-theme');
+                
+                // Set fiery footer bar colors
+                footerBar1Element.style.backgroundColor = '#D90429'; 
+                footerBar2Element.style.backgroundColor = '#FF4500'; 
+                
+                // Override photo container to use fiery styles defined in CSS
+                photoContainerElement.classList.remove('border-cyan-500', 'shadow-cyan-500/30');
+                photoContainerElement.classList.add('fiery-theme'); // Apply fiery border via class
+            } else {
+                // Apply default cyan colors for all non-fiery themes (including deceptive ones)
+                photoContainerElement.classList.remove('fiery-theme');
+                photoContainerElement.classList.add('border-cyan-500', 'shadow-cyan-500/30');
+                
+                // Revert footer bar colors to default
+                footerBar1Element.style.backgroundColor = 'var(--standard-header-bar-color)';
+                footerBar2Element.style.backgroundColor = '#06B6D4';
+                
+                // Update card shadow to match the status color (Blue, Green, or Red)
+                const shadowColor = isDeceptionActive ? profile.deception.targetColor : profile.color;
+                cardElement.style.boxShadow = `0 0 20px ${shadowColor}20`;
+            }
+
+
+            // --- 3. TEXT AND COLOR UPDATES ---
+            
+            // Determine effective colors for status and title (Deception only affects color, not text)
+            const effectiveStatusColor = isDeceptionActive ? profile.deception.targetColor : profile.color;
+            const effectiveTitleColor = isDeceptionActive ? profile.deception.targetTitleColor : profile.titleColor;
+
+            // Update Text Content (remains the same even with deception)
+            nameElement.textContent = profile.name;
+            idElement.textContent = profile.id;
+            statusElement.textContent = profile.status;
+
+            // Update title text and color dynamically
+            titleElement.textContent = profile.title;
+            titleElement.style.color = effectiveTitleColor;
+
+            // Update Status Glow Color
+            statusElement.style.color = effectiveStatusColor;
+        }
+
+        // Initialize the app when the window loads
+        window.onload = populateCharacterSelect;
+
+    </script>
+</body>
+</html>
